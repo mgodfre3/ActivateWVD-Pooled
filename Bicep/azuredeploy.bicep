@@ -1,3 +1,5 @@
+
+
 //Parameters
 param location string=resourceGroup().location
 param nameprefix string='ActivateWVD_'
@@ -26,13 +28,15 @@ param wvdbackplanelocation string = 'EastUS2'
 param hostPoolType string = 'pooled'
 param loadBalancerType string = 'BreadthFirst'
 param logAnalyticsWorkspaceName string = 'ActivateWVD-LAW'
+param logAnalyticsWorkspaceSku string = ''
+param logAnalyticsResourceGroup string = resourceGroup().name
+param logAnalyticslocation string = resourceGroup().location
 
 
 //Create Virtual Network for WVD Pools
 module stg 'Modules/CreateVNet.bicep'={
 name:'CreatevNet'
 }
-
 
 
 //Create WVD Azure File Services and FileShare`
@@ -47,25 +51,15 @@ module wvdFileServices 'Modules/CreateStorage.bicep'  = {
   }
 }
 
-
-//Create WVD backplane objects and configure Log Analytics Diagnostics Settings
-module wvdbackplane 'Modules/DeployLogAnalytics.bicep'  = {
-  name: 'wvdbackplane'
-  scope: resourceGroup(rgwvd.name)
+//Create Azure Log Analytics Workspace
+module wvdmonitor 'Modules/DeployLogAnalytics.bicep' = {
+  name : 'LAWorkspace'
   params: {
-    hostpoolName: hostpoolName
-    hostpoolFriendlyName: hostpoolFriendlyName
-    appgroupName: appgroupName
-    appgroupNameFriendlyName: appgroupNameFriendlyName
-    workspaceName: workspaceName
-    workspaceNameFriendlyName: workspaceNameFriendlyName
-    preferredAppGroupType: preferredAppGroupType
-    applicationgrouptype: preferredAppGroupType
-    wvdbackplanelocation: wvdbackplanelocation
-    hostPoolType: hostPoolType
-    loadBalancerType: loadBalancerType
-    logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
-    logAnalyticsResourceGroup : rdmon.name
-    wvdBackplaneResourceGroup : rgwvd.name
+    logAnalyticsWorkspaceName : logAnalyticsWorkspaceName
+    logAnalyticslocation : logAnalyticslocation
+    logAnalyticsWorkspaceSku : logAnalyticsWorkspaceSku
+    logAnalyticsResourceGroup : logAnalyticsResourceGroup
+    hostpoolName:hostpoolName
+    workspaceName:workspaceName
   }
 }
